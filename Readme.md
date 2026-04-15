@@ -1,34 +1,32 @@
 # Medical Appointment Scheduling System
+???
+The Notion log file for documenting the process and decisions taken can be found on: [text](https://www.notion.so/341f91b18420809eb5e8e6152763360a?v=343f91b1842080768eb6000c1b461565&source=copy_link)
 
-A Slack bot built with Django and the Slack Events API.  
-The bot listens to events from Slack and responds when a user greets it.
-The application runs a Django backend that receives events from Slack through the Events API.  
-Since the backend runs locally during development, ngrok is used to expose the local server to the internet.
 
 Users can:
-* Mention the bot in a channel
-* Send greeting messages
-* Receive automated responses from the bot
+* Upload working hours for each employee from the clinic
+* Schedule appointments for patients
+
+Clinic's patients can:
+* Schedule appointments for themselves and family members whose insurance ID they know
+* (Later in development) Receive e-mail confirmation about the date and time of the appointment
 
 ## Requirements
-* Python >= 3.11	
-* Conda (creates a Virtual Environment with its own python, django and tools)
-* Django (backend framework for Python, hosts an http server -similar to NestJS-)
-* Slack Workspace
-* ngrok
-* Git
-* Anaconda Prompt / CMD / Git Bash
+* Node.js >=22
+* npm >= 10	
+* PostgreSQL (Supabase)
+* Git Bash
 
 ## Tech Stack
 ### Backend
-- Python v3.11
-- Django (receives http requests from slack events)
-- Django REST Framework (Django extension for managing API endpoints)
-- Slack Python SDK (to engage with Slack API using Python)
-- Slack Events API
+- Node.js
+- Express (que hace?)
 
-### Infrastructure
-- ngrok (for exposing our local server to Slack)
+### Frontend
+- Alpine.js 
+- HTML
+- Tailwind CSS
+
 
 ## Setup and Execution
 
@@ -44,6 +42,7 @@ chmod -x run.sh
 ./run.sh
 ```
 
+Ya a partir de aca es de otro proyecto, queda como plantilla nomas
 3. Create an .env file following the .env_example. You'll need to create your own Slack App at https://api.slack.com/apps/; in Features → OAuth & Permissions → Scope, add bot token scopes for your bot to be able to write and read from the channels you add it to. In OAuth Tokens, click Install to <your Slack Project> to get the Authentication and Verification Tokens needed for the .env.
 
 4. Log in to ngrok and create a domain to start a tunnel (you can reuse an existing ngrok domain if you already have one)
