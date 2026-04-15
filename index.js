@@ -7,6 +7,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+app.use(express.static("public")); // esto le dice que use como front lo que esta en la carpeta static
+
+
 app.get("/", (req, res) => {
   res.send("API funcionando");
 });
@@ -14,7 +18,6 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Servidor en http://localhost:3000");
 });
-
 
 const client = new Client({
   connectionString: process.env.DATABASE_URL,

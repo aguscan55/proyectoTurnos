@@ -1,30 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Turnos App</title>
-
-  <!-- Alpine -->
   <script src="https://unpkg.com/alpinejs" defer></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      display: flex;
+    }
 
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
+    .sidebar {
+      width: 220px;
+      background: #1e1e2f;
+      color: white;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      margin-top: 0;
+    }
+
+    .sidebar button {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: #333;
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+
+    .main {
+      flex: 1;
+      padding: 20px;
+    }
+
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .day {
+      border: 1px solid #ccc;
+      min-height: 120px;
+      padding: 5px;
+    }
+
+    .appointment {
+      background: #4caf50;
+      color: white;
+      margin-top: 5px;
+      padding: 4px;
+      font-size: 12px;
+    }
+
+    .form {
+      margin-top: 20px;
+    }
+
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+    }
+  </style>
 </head>
 
-<body class="p-5">
+<body x-data="app()">
 
-  <div x-data="{ mensaje: '' }">
-    <h1 class="text-2xl mb-4">Sistema de Turnos</h1>
-
-    <button 
-      class="bg-blue-500 text-white px-4 py-2"
-      @click="fetch('http://localhost:3000')
-        .then(res => res.text())
-        .then(data => mensaje = data)">
-      Probar backend
-    </button>
-
-    <p x-text="mensaje" class="mt-4"></p>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>Turnos</h2>
+    <button @click="view='calendar'">Calendario</button>
+    <button @click="view='create'">Nuevo turno</button>
   </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- CALENDAR VIEW -->
+    <div x-show="view === 'calendar'">
+      <h1>Calendario</h1>
+
+      <div class="calendar">
+        <template x-for="day in days" :key="day">
+          <div class="day">
+            <strong x-text="day"></strong>
+
+            <template x-for="a in appointments.filter(x => x.date.startsWith(day))">
+              <div class="appointment">
+                <div x-text="a.client_name"></div>
+                <div x-text="formatTime(a.date)"></div>
+              </div>
+            </template>
+
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- CREATE VIEW -->
+    <div x-show="view === 'create'" class="form">
+      <h1>Nuevo Turno</h1>
+
+      <input type="text" placeholder="Nombre" x-model="form.name">
+      <input type="datetime-local" x-model="form.date">
+
+      <button @click="createAppointment()">Guardar</button>
+    </div>
+
+  </div>
+
+<script>
+function app() {
+  return {
+    view: 'calendar',
+
+    appointments: [],
+
+    form: {
+      name: '',
+      date: ''
+    },
+
+    days: [],
+
+    async init() {
+      this.generateWeek();
+      await this.loadAppointments();
+    },
+
+    generateWeek() {
+      const today = new Date();
+      this.days = [];
+
+      for (let i = 0; i < 7; i++) {
+        let d = new Date();
+        d.setDate(today.getDate() + i);
+
+        let formatted = d.toISOString().split('T')[0];
+        this.days.push(formatted);
+      }
+    },
+
+    async loadAppointments() {
+      const res = await fetch("http://localhost:3000/appointments");
+      this.appointments = await res.json();
+    },
+
+    async createAppointment() {
+      await fetch("http://localhost:3000/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          client_name: this.form.name,
+          date: this.form.date
+        })
+      });
+
+      this.form.name = '';
+      this.form.date = '';
+
+      this.view = 'calendar';
+      await this.loadAppointments();
+    },
+
+    formatTime(date) {
+      return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  }
+}
+</script>
 
 </body>
 </html>
