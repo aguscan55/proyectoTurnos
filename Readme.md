@@ -1,6 +1,6 @@
 # Medical Appointment Scheduling System
 ???
-The Notion log file for documenting the process and decisions taken can be found on: [text](https://www.notion.so/341f91b18420809eb5e8e6152763360a?v=343f91b1842080768eb6000c1b461565&source=copy_link)
+The Notion log file for documenting the process and decisions taken can be found on: [here](https://www.notion.so/341f91b18420809eb5e8e6152763360a?v=343f91b1842080768eb6000c1b461565&source=copy_link)
 
 
 Users can:
