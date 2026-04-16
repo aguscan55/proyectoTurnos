@@ -115,6 +115,8 @@
   </div>
 
 <script>
+import { createAppointment } from "./js/appointments.js";
+
 function app() {
   return {
     view: 'calendar',
@@ -151,7 +153,7 @@ function app() {
       this.appointments = await res.json();
     },
 
-    async createAppointment() {
+    async handleCreateAppointment() {
       const appointment = await createAppointment(this.form);
 
       this.form.name = '';

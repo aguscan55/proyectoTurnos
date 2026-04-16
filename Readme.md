@@ -4,7 +4,7 @@ The Notion log file for documenting the process and decisions taken can be found
 
 
 Users can:
-* Upload working hours for each employee from the clinic
+* Upload working hours for each doctor employee from the clinic
 * Schedule appointments for patients
 
 Clinic's patients can:
