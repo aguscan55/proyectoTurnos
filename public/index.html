@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Turnos App</title>
   <script src="https://unpkg.com/alpinejs" defer></script>
+
   <style>
     body {
       margin: 0;
@@ -69,7 +70,7 @@
   </style>
 </head>
 
-<body x-data="app()">
+<body x-data="app()" x-init="init()">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -90,7 +91,7 @@
           <div class="day">
             <strong x-text="day"></strong>
 
-            <template x-for="a in appointments.filter(x => x.date.startsWith(day))">
+            <template x-for="a in appointments.filter(x => new Date(x.date).toISOString().split('T')[0] === day)">
               <div class="appointment">
                 <div x-text="a.client_name"></div>
                 <div x-text="formatTime(a.date)"></div>
@@ -109,14 +110,12 @@
       <input type="text" placeholder="Nombre" x-model="form.name">
       <input type="datetime-local" x-model="form.date">
 
-      <button @click="createAppointment()">Guardar</button>
+      <button @click="handleCreateAppointment()">Guardar</button>
     </div>
 
   </div>
 
 <script>
-import { createAppointment } from "./js/appointments.js";
-
 function app() {
   return {
     view: 'calendar',
@@ -154,7 +153,16 @@ function app() {
     },
 
     async handleCreateAppointment() {
-      const appointment = await createAppointment(this.form);
+      await fetch("http://localhost:3000/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          client_name: this.form.name,
+          date: this.form.date
+        })
+      });
 
       this.form.name = '';
       this.form.date = '';

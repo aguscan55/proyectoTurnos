@@ -1,8 +1,12 @@
 import { createAppointment, deleteAppointment } from "./models/appointments.models.js";
-const express = require("express");
-const cors = require("cors");
-const { Client } = require("pg");
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import pkg from "pg";
+import dotenv from "dotenv";
+
+const { Client } = pkg;
+
+dotenv.config();
 
 //Connect Supabase as our Database
 const client = new Client({
@@ -17,19 +21,15 @@ app.use(express.json());
 
 app.use(express.static("public")); //Esto indica que se use como Frontend al contenido en la carpeta 'public'
 
-app.get("/", (req, res) => {
-  res.send("API funcionando");
-});
 
 app.listen(3000, () => {
   console.log("Servidor en http://localhost:3000");
 });
 
-client.query("SELECT NOW()", (err, res) => {
-  console.log(err, res);
-});
+const res = await client.query("SELECT NOW()");
+console.log(res.rows);
 
-//Add an appointment to the Database
+// defino endpoint para agregar appointments a la db
 app.post("/appointments", async (req, res) => {
   const { client_name, date } = req.body;
 
