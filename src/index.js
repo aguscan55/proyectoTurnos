@@ -34,15 +34,14 @@ app.post("/appointments", async (req, res) => {
   const { client_name, date } = req.body;
 
   try {
-    const result = await client.query(
-      "INSERT INTO appointments (client_name, date) VALUES ($1, $2) RETURNING *",
-      [client_name, date]
-    );
-
-    res.json(result.rows[0]);
+    const appointment = await createAppointment(client, client_name, date);
+    res.json({
+      message: "Assigned", 
+      appointment
+    });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error");
+    res.status(500).send("Error: Couldn't create the appointment.");
   }
 });
 
@@ -65,7 +64,7 @@ app.delete("/appointments/:id", async (req, res) => {
       message: "Deleted", 
       appointment
     });
-    
+
   } catch (err) {
     console.error(err);
     res.status(500).send("Error: Couldn't delete the appointment.");
