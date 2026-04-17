@@ -11,3 +11,15 @@ export async function createAppointment(form) {
       });
       return res.json();
     }
+    
+export async function deleteAppointment(id) {
+  const res = await fetch(`http://localhost:3000/appointments/${id}`, {
+    method: "DELETE"
+  });
+
+  if (!res.ok) {
+    throw new Error("Error deleting appointment");
+  }
+
+  return res.json(); //Esto devuelve { message, appointment }
+}

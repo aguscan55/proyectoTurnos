@@ -187,6 +187,21 @@ function app() {
         hour: '2-digit',
         minute: '2-digit'
       });
+    },
+      //Aca esta el deleteAppointment
+    async handleDeleteAppointment(id) {
+      try {
+        const response = await deleteAppointment(id);
+
+        console.log("Deleted:", response);
+        //Esto me devuelve todos los appointments, pero sacando al que eliminamos
+        this.appointments = this.appointments.filter(a => a.id !== id);
+
+      } catch (error) {
+        console.error(error);
+        alert("The appointment couldn't be deleted.");
+      }
+      this.view = 'calendar';
     }
   }
 }
