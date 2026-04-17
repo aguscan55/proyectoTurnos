@@ -20,10 +20,6 @@
       padding: 20px;
     }
 
-    .sidebar h2 {
-      margin-top: 0;
-    }
-
     .sidebar button {
       width: 100%;
       margin-top: 10px;
@@ -59,10 +55,6 @@
       font-size: 12px;
     }
 
-    .form {
-      margin-top: 20px;
-    }
-
     input, button {
       padding: 8px;
       margin: 5px 0;
@@ -82,7 +74,7 @@
   <!-- MAIN -->
   <div class="main">
 
-    <!-- CALENDAR VIEW -->
+    <!-- CALENDAR -->
     <div x-show="view === 'calendar'">
       <h1>Calendario</h1>
 
@@ -95,6 +87,8 @@
               <div class="appointment">
                 <div x-text="a.client_name"></div>
                 <div x-text="formatTime(a.date)"></div>
+
+                <button @click="editAppointment(a)">Editar</button>
               </div>
             </template>
 
@@ -103,9 +97,9 @@
       </div>
     </div>
 
-    <!-- CREATE VIEW -->
-    <div x-show="view === 'create'" class="form">
-      <h1>Nuevo Turno</h1>
+    <!-- FORM -->
+    <div x-show="view === 'create'">
+      <h1 x-text="editingId ? 'Editar Turno' : 'Nuevo Turno'"></h1>
 
       <input type="text" placeholder="Nombre" x-model="form.name">
       <input type="datetime-local" x-model="form.date">
@@ -119,8 +113,8 @@
 function app() {
   return {
     view: 'calendar',
-
     appointments: [],
+    editingId: null,
 
     form: {
       name: '',
@@ -141,9 +135,7 @@ function app() {
       for (let i = 0; i < 7; i++) {
         let d = new Date();
         d.setDate(today.getDate() + i);
-
-        let formatted = d.toISOString().split('T')[0];
-        this.days.push(formatted);
+        this.days.push(d.toISOString().split('T')[0]);
       }
     },
 
@@ -152,17 +144,36 @@ function app() {
       this.appointments = await res.json();
     },
 
+    editAppointment(a) {
+      this.form.name = a.client_name;
+      this.form.date = a.date.slice(0, 16);
+      this.editingId = a.id;
+      this.view = 'create';
+    },
+
     async handleCreateAppointment() {
-      await fetch("http://localhost:3000/appointments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          client_name: this.form.name,
-          date: this.form.date
-        })
-      });
+      if (this.editingId) {
+        await fetch(`http://localhost:3000/appointments/${this.editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_name: this.form.name,
+            date: this.form.date
+          })
+        });
+
+        this.editingId = null;
+
+      } else {
+        await fetch("http://localhost:3000/appointments", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            client_name: this.form.name,
+            date: this.form.date
+          })
+        });
+      }
 
       this.form.name = '';
       this.form.date = '';
@@ -172,7 +183,10 @@ function app() {
     },
 
     formatTime(date) {
-      return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return new Date(date).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
   }
 }

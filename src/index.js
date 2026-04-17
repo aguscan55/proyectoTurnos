@@ -70,3 +70,21 @@ app.delete("/appointments/:id", async (req, res) => {
     res.status(500).send("Error: Couldn't delete the appointment.");
   }
 });
+
+// Edita un appointment, pudiendo cambiar su fecha y nombre
+app.put("/appointments/:id", async (req, res) => {
+  const { id } = req.params;
+  const { client_name, date } = req.body;
+
+  try {
+    const result = await client.query(
+      "UPDATE appointments SET client_name = $1, date = $2 WHERE id = $3 RETURNING *",
+      [client_name, date, id]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating appointment");
+  }
+});
