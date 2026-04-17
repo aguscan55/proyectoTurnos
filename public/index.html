@@ -83,7 +83,7 @@
           <div class="day">
             <strong x-text="day"></strong>
 
-            <template x-for="a in appointments.filter(x => new Date(x.date).toISOString().split('T')[0] === day)">
+            <template x-for="a in appointments.filter(x => x.date.slice(0, 10) === day)">
               <div class="appointment">
                 <div x-text="a.client_name"></div>
                 <div x-text="formatTime(a.date)"></div>
