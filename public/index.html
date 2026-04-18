@@ -89,6 +89,7 @@
                 <div x-text="formatTime(a.date)"></div>
 
                 <button @click="editAppointment(a)">Editar</button>
+                <button @click="handleDeleteAppointment(a)">Eliminar turno</button>
               </div>
             </template>
 
@@ -191,12 +192,13 @@ function app() {
       //Aca esta el deleteAppointment
     async handleDeleteAppointment(id) {
       try {
-        const response = await deleteAppointment(id);
-
+        const res = await fetch(`http://localhost:3000/appointments/${id}`, {
+          method: "DELETE"
+        });
         console.log("Deleted:", response);
         //Esto me devuelve todos los appointments, pero sacando al que eliminamos
         this.appointments = this.appointments.filter(a => a.id !== id);
-
+        return res.json();
       } catch (error) {
         console.error(error);
         alert("The appointment couldn't be deleted.");

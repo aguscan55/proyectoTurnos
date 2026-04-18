@@ -1,3 +1,5 @@
+//Si pudieramos poner type="module" en index.html <script> para hacer import, importaríamos estas funciones y quedaria mas ordenado
+
 export async function createAppointment(form) {
       await fetch("http://localhost:3000/appointments", {
         method: "POST",
