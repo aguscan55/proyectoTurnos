@@ -87,7 +87,7 @@
                 <div x-text="a.client_name"></div>
                 <div x-text="formatTime(a.date)"></div>
 
-                <button @click="editAppointment(a)">Editar</button>
+                <button @click="handleEditAppointment(a)">Editar</button>
                 <button @click="handleDeleteAppointment(a.id)">Eliminar turno</button>
               </div>
             </template>
@@ -111,7 +111,7 @@
 
 <script type="module">
 import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
-  import { createAppointment, deleteAppointment } from './js/appointments.js'
+  import { createAppointment, editAppointment, deleteAppointment } from './js/appointments.js'
 
   window.Alpine = Alpine
 
@@ -143,56 +143,47 @@ import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
       }
     },
 
-    async loadAppointments() {
-      const res = await fetch("http://localhost:3000/appointments");
-      this.appointments = await res.json();
-    },
-
-    editAppointment(a) {
-      this.form.name = a.client_name;
-      this.form.date = a.date.slice(0, 16);
-      this.editingId = a.id;
-      this.view = 'create';
-    },
-
-    async handleCreateAppointment() {
-      if (this.editingId) {
-        await fetch(`http://localhost:3000/appointments/${this.editingId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            client_name: this.form.name,
-            date: this.form.date
-          })
-        });
-
-        this.editingId = null;
-
-      } else {
-        await fetch("http://localhost:3000/appointments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            client_name: this.form.name,
-            date: this.form.date
-          })
-        });
-      }
-
-      this.form.name = '';
-      this.form.date = '';
-
-      this.view = 'calendar';
-      await this.loadAppointments();
-    },
-
     formatTime(date) {
       return new Date(date).toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit'
       });
     },
-      //Aca esta el deleteAppointment
+
+    async loadAppointments() {
+      const res = await fetch("http://localhost:3000/appointments");
+      this.appointments = await res.json();
+    },
+
+//////Aca esta el editAppointment//////
+    handleEditAppointment(a) {
+      this.form.name = a.client_name;
+      this.form.date = a.date.slice(0, 16);
+      this.editingId = a.id;
+      this.view = 'create';
+    },
+
+//////Aca esta el createAppointment//////
+    async handleCreateAppointment() {
+      try {
+        if (this.editingId) {
+          await editAppointment(this.editingId, this.form);
+          this.editingId = null;
+        } else {
+          await createAppointment(this.form);
+        }
+        this.form.name = '';
+        this.form.date = '';
+
+        this.view = 'calendar';
+        await this.loadAppointments();
+      } catch (error) {
+        console.error(error);
+        alert("Error saving appointment");
+      }
+    },
+
+//////Aca esta el deleteAppointment//////
     async handleDeleteAppointment(id) {
       try {
         await deleteAppointment(id);

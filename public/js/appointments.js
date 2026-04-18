@@ -1,5 +1,5 @@
 export async function createAppointment(form) {
-  await fetch("http://localhost:3000/appointments", {
+  const res = await fetch("http://localhost:3000/appointments", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -17,7 +17,7 @@ export async function createAppointment(form) {
 
 export async function editAppointment(id, form) {
   const res = await fetch(`http://localhost:3000/appointments/${id}`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json"
     },
