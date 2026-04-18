@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Turnos App</title>
-  <script src="https://unpkg.com/alpinejs" defer></script>
 
   <style>
     body {
@@ -62,7 +61,7 @@
   </style>
 </head>
 
-<body x-data="app()" x-init="init()">
+<body x-data="app" x-init="init()">
 
   <!-- SIDEBAR -->
   <div class="sidebar">
@@ -89,7 +88,7 @@
                 <div x-text="formatTime(a.date)"></div>
 
                 <button @click="editAppointment(a)">Editar</button>
-                <button @click="handleDeleteAppointment(a)">Eliminar turno</button>
+                <button @click="handleDeleteAppointment(a.id)">Eliminar turno</button>
               </div>
             </template>
 
@@ -110,9 +109,13 @@
 
   </div>
 
-<script>
-function app() {
-  return {
+<script type="module">
+import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
+  import { createAppointment, deleteAppointment } from './js/appointments.js'
+
+  window.Alpine = Alpine
+
+  Alpine.data('app', () => ({
     view: 'calendar',
     appointments: [],
     editingId: null,
@@ -192,21 +195,19 @@ function app() {
       //Aca esta el deleteAppointment
     async handleDeleteAppointment(id) {
       try {
-        const res = await fetch(`http://localhost:3000/appointments/${id}`, {
-          method: "DELETE"
-        });
-        console.log("Deleted:", response);
+        await deleteAppointment(id);
+
         //Esto me devuelve todos los appointments, pero sacando al que eliminamos
         this.appointments = this.appointments.filter(a => a.id !== id);
-        return res.json();
+        this.view = 'calendar';
+
       } catch (error) {
         console.error(error);
         alert("The appointment couldn't be deleted.");
       }
-      this.view = 'calendar';
     }
-  }
-}
+  }))
+  Alpine.start()
 </script>
 
 </body>

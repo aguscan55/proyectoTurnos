@@ -4,7 +4,7 @@ export const createAppointment = async (client, client_name, date) => {
       [client_name, date]
     );
 
-    result.json(result.rows[0]);
+    return result.rows[0];
 };
 
 export const deleteAppointment = async (client, id) => {
