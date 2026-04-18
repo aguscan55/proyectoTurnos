@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
   <title>Turnos App</title>
 
   <style>
@@ -73,7 +74,7 @@
   <!-- MAIN -->
   <div class="main">
 
-    <!-- CALENDAR -->
+    <!-- CALENDAR ELIMINAR
     <div x-show="view === 'calendar'">
       <h1>Calendario</h1>
 
@@ -95,6 +96,34 @@
           </div>
         </template>
       </div>
+    </div> -->
+    <!-- CALENDAR -->
+    <div x-show="view === 'calendar'">
+      <h1>Calendario</h1>
+      <div id="calendar"></div>    
+    </div>
+    <!-- La ventanita que aparece al clickear sobre un turno ya existente: -->
+    <div x-show="showModal" style="
+      position: fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background: rgba(0,0,0,0.5);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    ">
+      <div style="background:rgb(223, 251, 255); padding:20px; border-radius:10px;">
+
+        <h2>Turno</h2>
+
+        <p><strong>Nombre:</strong> <span x-text="selectedAppointment?.client_name"></span></p>
+        <p><strong>Fecha:</strong> <span x-text="selectedAppointment?.date"></span></p>
+
+        <button @click="handleEditAppointment(selectedAppointment)">Editar</button>
+        <button @click="handleDeleteAppointment(selectedAppointment.id)">Eliminar</button>
+        <button @click="showModal = false">Cerrar</button>
+
+      </div>
     </div>
 
     <!-- FORM -->
@@ -110,11 +139,10 @@
   </div>
 
 <script type="module">
-import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
+  import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
   import { createAppointment, editAppointment, deleteAppointment } from './js/appointments.js'
 
   window.Alpine = Alpine
-
   Alpine.data('app', () => ({
     view: 'calendar',
     appointments: [],
@@ -126,10 +154,13 @@ import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
     },
 
     days: [],
+    selectedAppointment: null,
+    showModal: false,
 
     async init() {
       this.generateWeek();
-      await this.loadAppointments();
+      await this.initCalendar();
+      //await this.loadAppointments();
     },
 
     generateWeek() {
@@ -150,16 +181,70 @@ import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
       });
     },
 
-    async loadAppointments() {
+//    async loadAppointments() {
+//      const res = await fetch("http://localhost:3000/appointments");
+//      this.appointments = await res.json();
+//    }, la de abajo seria su reemplazo usando FullCalendar
+
+    async refreshCalendar() {
       const res = await fetch("http://localhost:3000/appointments");
-      this.appointments = await res.json();
+      const appointments = await res.json();
+
+      this.calendar.removeAllEvents();
+
+      this.calendar.addEventSource(
+        appointments.map(a => ({
+          id: a.id,
+          title: a.client_name,
+          start: a.date
+        }))
+      );
+    },
+
+    async initCalendar() {
+      const res = await fetch("http://localhost:3000/appointments")
+      const appointments = await res.json()
+
+      this.calendar = new FullCalendar.Calendar(
+        document.getElementById('calendar'),
+        {
+          initialView: 'dayGridMonth',
+
+          events: appointments.map(a => ({
+            id: a.id,
+            title: a.client_name,
+            start: a.date
+          })),
+
+          dateClick: (info) => {
+            this.form.date = info.dateStr + "T09:00";
+            this.view = 'create';
+          },
+
+          eventClick: async (info) => {
+            this.selectedAppointment = {
+              id: info.event.id,
+              client_name: info.event.title,
+              date: info.event.start.toISOString()
+            },
+            this.showModal = true
+          }
+        }
+      )
+
+      this.calendar.render()
     },
 
 //////Aca esta el editAppointment//////
     handleEditAppointment(a) {
       this.form.name = a.client_name;
-      this.form.date = a.date.slice(0, 16);
+      //Cambie esto porque rompia el .slice cuando el input no era String
+      const dateStr = typeof a.date === "string"
+        ? a.date
+        : a.date.toISOString();
+      this.form.date = dateStr.slice(0, 16);
       this.editingId = a.id;
+      this.showModal = false;
       this.view = 'create';
     },
 
@@ -176,7 +261,7 @@ import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
         this.form.date = '';
 
         this.view = 'calendar';
-        await this.loadAppointments();
+        await this.refreshCalendar();
       } catch (error) {
         console.error(error);
         alert("Error saving appointment");
@@ -186,10 +271,12 @@ import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
 //////Aca esta el deleteAppointment//////
     async handleDeleteAppointment(id) {
       try {
-        await deleteAppointment(id);
+        await deleteAppointment(Number(id));
 
         //Esto me devuelve todos los appointments, pero sacando al que eliminamos
         this.appointments = this.appointments.filter(a => a.id !== id);
+        this.showModal = false;
+        await this.refreshCalendar();
         this.view = 'calendar';
 
       } catch (error) {
