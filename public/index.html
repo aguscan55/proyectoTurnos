@@ -69,34 +69,12 @@
     <h2>Turnos</h2>
     <button @click="view='calendar'">Calendario</button>
     <button @click="view='create'">Nuevo turno</button>
+    <button @click="view='createSlot'">Crear Slot</button>
   </div>
 
   <!-- MAIN -->
   <div class="main">
 
-    <!-- CALENDAR ELIMINAR
-    <div x-show="view === 'calendar'">
-      <h1>Calendario</h1>
-
-      <div class="calendar">
-        <template x-for="day in days" :key="day">
-          <div class="day">
-            <strong x-text="day"></strong>
-
-            <template x-for="a in appointments.filter(x => x.date.slice(0, 10) === day)">
-              <div class="appointment">
-                <div x-text="a.client_name"></div>
-                <div x-text="formatTime(a.date)"></div>
-
-                <button @click="handleEditAppointment(a)">Editar</button>
-                <button @click="handleDeleteAppointment(a.id)">Eliminar turno</button>
-              </div>
-            </template>
-
-          </div>
-        </template>
-      </div>
-    </div> -->
     <!-- CALENDAR -->
     <div x-show="view === 'calendar'">
       <h1>Calendario</h1>
@@ -116,31 +94,47 @@
 
         <h2>Turno</h2>
 
-        <p><strong>Nombre:</strong> <span x-text="selectedAppointment?.client_name"></span></p>
-        <p><strong>Fecha:</strong> <span x-text="selectedAppointment?.date"></span></p>
+        <p><strong>Nombre:</strong> <span x-text="selectedSlot?.firstname + ' ' + selectedSlot?.lastname"></span></p>
+        <p><strong>Fecha:</strong> <span x-text="selectedSlot?.date"></span></p>
+        <p><strong>Estado:</strong> Ocupado</p>
+        <p><strong>Horario:</strong> ...</p>
 
-        <button @click="handleEditAppointment(selectedAppointment)">Editar</button>
-        <button @click="handleDeleteAppointment(selectedAppointment.id)">Eliminar</button>
+        <button @click="handleEditAppointment(selectedSlot)">Editar</button>
+        <button @click="handleDeleteAppointment(selectedSlot.id)">Eliminar</button>
         <button @click="showModal = false">Cerrar</button>
 
       </div>
     </div>
 
-    <!-- FORM -->
+    <!-- FORM PARA TOMAR UN TURNO -->
     <div x-show="view === 'create'">
       <h1 x-text="editingId ? 'Editar Turno' : 'Nuevo Turno'"></h1>
 
-      <input type="text" placeholder="Nombre" x-model="form.name">
-      <input type="datetime-local" x-model="form.date">
+      <p><strong>Fecha:</strong> <span x-text="form.date"></span></p>
+      <input type="text" placeholder="Nombre" x-model="form.firstname">
+      <input type="text" placeholder="Apellido" x-model="form.lastname">
+      <input type="text" placeholder="DNI" x-model="form.dni">
 
-      <button @click="handleCreateAppointment()">Guardar</button>
+      <button @click="handleScheduleAppointment()">Guardar</button>
+    </div>
+
+    <!-- FORM PARA CREAR UN TURNO -->
+    <div x-show="view === 'createSlot'">
+      <h1>Crear Slot</h1>
+
+      <input type="text" placeholder="Médico" x-model="slotForm.doctor">
+      <input type="text" placeholder="Especialidad" x-model="slotForm.specialty">
+      <input type="datetime-local" x-model="slotForm.date">
+
+      <button @click="handleCreateSlot()">Guardar</button>
     </div>
 
   </div>
 
 <script type="module">
   import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
-  import { createAppointment, editAppointment, deleteAppointment } from './js/appointments.js'
+  import { scheduleAppointment, editAppointment, deleteAppointment } from './js/appointments.js'
+  import { createAppointmentSlot } from './js/slots.js'
 
   window.Alpine = Alpine
   Alpine.data('app', () => ({
@@ -149,12 +143,20 @@
     editingId: null,
 
     form: {
-      name: '',
+      firstname: '',
+      lastname: '',
+      dni: '',
+      date: ''
+    },
+
+    slotForm: {
+      doctor: '',
+      specialty: '',
       date: ''
     },
 
     days: [],
-    selectedAppointment: null,
+    selectedSlot: null,
     showModal: false,
 
     async init() {
@@ -187,47 +189,77 @@
 //    }, la de abajo seria su reemplazo usando FullCalendar
 
     async refreshCalendar() {
-      const res = await fetch("http://localhost:3000/appointments");
-      const appointments = await res.json();
+      const res = await fetch("http://localhost:3000/slots");
+      const slots = await res.json();
 
       this.calendar.removeAllEvents();
 
       this.calendar.addEventSource(
-        appointments.map(a => ({
-          id: a.id,
-          title: a.client_name,
-          start: a.date
+        slots.map(s => ({
+          id: s.id,
+          title: s.is_booked ? (s.firstname + ' ' + s.lastname) : "Disponible",
+          start: s.date,
+          color: s.is_booked ? "red" : "green",
+          extendedProps: {
+            is_booked: s.is_booked,
+            appointment_id: s.appointment_id,
+            firstname: s.firstname,
+            lastname: s.lastname,
+            dni: s.dni
+          }
         }))
       );
     },
 
     async initCalendar() {
-      const res = await fetch("http://localhost:3000/appointments")
-      const appointments = await res.json()
+      const res = await fetch("http://localhost:3000/slots")
+      const slots = await res.json()
 
       this.calendar = new FullCalendar.Calendar(
         document.getElementById('calendar'),
         {
           initialView: 'dayGridMonth',
 
-          events: appointments.map(a => ({
-            id: a.id,
-            title: a.client_name,
-            start: a.date
+          events: slots.map(s => ({
+            id: s.id,
+            title: s.is_booked ? (s.firstname + ' ' + s.lastname) : "Disponible",
+            start: s.date,
+            color: s.is_booked ? "red" : "green",
+            extendedProps: {
+              is_booked: s.is_booked,
+              appointment_id: s.appointment_id,
+              firstname: s.firstname,
+              lastname: s.lastname,
+              dni: s.dni
+            }
           })),
 
-          dateClick: (info) => {
-            this.form.date = info.dateStr + "T09:00";
-            this.view = 'create';
-          },
-
+          //La lógica de clickear en un turno (disponible o agendado)
           eventClick: async (info) => {
-            this.selectedAppointment = {
-              id: info.event.id,
-              client_name: info.event.title,
-              date: info.event.start.toISOString()
-            },
-            this.showModal = true
+            const props = info.event.extendedProps;
+
+            if (!props.is_booked) {  //Te lleva al forms a agendar un turno
+              this.form = {
+                slot_id: info.event.id,
+                firstname: "",
+                lastname: "",
+                dni: ""
+              };
+              this.view = 'create';
+
+            } else {  //Te lleva al Modal a editar tu turno
+              this.editingId = props.appointment_id;
+              //this.view = "edit";
+              this.selectedSlot = {
+                id: info.event.id,
+                appointment_id: props.appointment_id,
+                firstname: props.firstname,
+                lastname: props.lastname,
+                dni: props.dni,
+                date: info.event.start.toISOString()
+              };
+              this.showModal = true
+            }
           }
         }
       )
@@ -235,37 +267,34 @@
       this.calendar.render()
     },
 
-//////Aca esta el editAppointment//////
-    handleEditAppointment(a) {
-      this.form.name = a.client_name;
-      //Cambie esto porque rompia el .slice cuando el input no era String
-      const dateStr = typeof a.date === "string"
-        ? a.date
-        : a.date.toISOString();
-      this.form.date = dateStr.slice(0, 16);
-      this.editingId = a.id;
-      this.showModal = false;
-      this.view = 'create';
-    },
-
-//////Aca esta el createAppointment//////
-    async handleCreateAppointment() {
+//////Aca esta el scheduleAppointment//////
+    async handleScheduleAppointment() {
       try {
         if (this.editingId) {
           await editAppointment(this.editingId, this.form);
           this.editingId = null;
         } else {
-          await createAppointment(this.form);
+          await scheduleAppointment(this.form);
         }
-        this.form.name = '';
-        this.form.date = '';
-
+        this.form = { firstname: '', lastname: '', dni: '', date: '' };
         this.view = 'calendar';
         await this.refreshCalendar();
       } catch (error) {
         console.error(error);
         alert("Error saving appointment");
       }
+    },
+
+//////Aca esta el editAppointment//////
+    handleEditAppointment(a) {
+      this.form = {
+        firstname: a.firstname,
+        lastname: a.lastname,
+        dni: a.dni
+      }
+      this.editingId = a.appointment_id;
+      this.showModal = false;
+      this.view = 'create';
     },
 
 //////Aca esta el deleteAppointment//////
@@ -282,6 +311,20 @@
       } catch (error) {
         console.error(error);
         alert("The appointment couldn't be deleted.");
+      }
+    },
+
+//////Aca esta el createAppointmentSlot//////
+    async handleCreateSlot() {
+      try {
+        await createAppointmentSlot(this.slotForm);
+        this.slotForm = { doctor: '', specialty: '', date: '' };
+        this.view = 'calendar';
+        await this.refreshCalendar();
+
+      } catch (error) {
+        console.error(error);
+        alert("The appointment slot couldn't be created.");
       }
     }
   }))
