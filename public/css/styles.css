@@ -37,7 +37,7 @@ body {
     width: 220px;
     background: #1e1e2f;
     color: white;
-    height: calc(100vh - 60px);
+    height: calc(300vh - 60px);
     padding: 20px;
 }
 
@@ -57,15 +57,23 @@ body {
 
 .main {
     flex: 1;
-    padding: 20px;
+    padding: 10px 20px;
+}
+h1 {
+  margin-top: 0;
+  padding: 0px;
 }
 
+/* Todo son cards, el calendario, los forms, modals, todo lo que quede con bordes redondeados mas prolijo */
 .card {
     background: white;
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
     font-size: 20px;
+}
+.card input {
+    margin-bottom: 30px;
 }
 .card button {
     display: inline-block;
@@ -85,7 +93,7 @@ body {
     background: #bbdfe7;
 }
 
-
+/* Este no es un modal, sino el overlay al aparecer el modal */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -98,7 +106,7 @@ body {
     justify-content: center;
     z-index: 1000;
 }
-
+/* Esto se diferencia de la class modal-overlay porque son los elementos dentro de la card*/
 #modalStyle {
     width: 45%;
     margin: 0 auto;
@@ -132,9 +140,6 @@ input {
     border: 1px solid #ccc;
     font-size: 16px;
 }
-.card input {
-    margin-bottom: 30px;
-}
 
 button.primary {
     margin-top: 15px;
@@ -145,6 +150,7 @@ button.primary {
     border-radius: 8px;
     cursor: pointer;
 }
+
 /* CALENDAR */
 .calendar {
     display: grid;
@@ -159,10 +165,88 @@ button.primary {
     padding: 5px;
 }
 
+.fc-daygrid-day:hover {
+  background: #eef6f8;
+  cursor: pointer;
+}
+
+.fc-toolbar-title {
+  font-size: 12px;
+  font-weight: lighter;
+  color: #2a2a2a;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 .appointment {
     background: #4caf50;
     color: white;
     margin-top: 5px;
     padding: 4px;
     font-size: 12px;
+}
+
+.day-schedule {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+/* Sobre la tabla al clickear en un dia */
+.schedule-table {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    border-bottom: 1px solid #ddd;
+}
+.row:last-child {
+  border-bottom: none;
+}
+.hour {
+    width: 60px;
+    padding: 10px;
+    font-weight: bold;
+    border-right: 1px solid #ddd;
+    background: #f9fafb;
+    color: #2d2d2d;
+}
+
+.slots {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    flex-wrap: wrap;
+}
+
+.calendar-box {
+    min-width: 180px;
+    max-width: 250px;
+    height: 75px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 20px;
+    font-family:Arial, Helvetica, sans-serif;
+    color: white;
+    min-width: 120px;
+}
+
+.calendar-box.available {
+    background: #5a5dc3;
+}
+
+.calendar-box.occupied {
+    background: #8a39c4;
+}
+
+.calendar-box:hover {
+    transform: scale(1.05);
+    transition: 0.2s;
 }

@@ -44,11 +44,20 @@
       <!-- MODAL -->
       <div x-show="showModal" class="modal-overlay">        
         <div class="card" id="modalStyle">
-          <h2>Turno</h2>
-          <p><strong>Nombre:</strong> <span x-text="selectedSlot?.firstname + ' ' + selectedSlot?.lastname"></span></p>
-          <p><strong>Fecha:</strong> <span x-text="selectedSlot?.date"></span></p>
-          <p><strong>Estado:</strong> Ocupado</p>
+          <h2>Detalle del turno</h2>
 
+          <p><strong>Médico:</strong> <span x-text="selectedSlot?.doctor"></span></p>
+          <p><strong>Área:</strong> <span x-text="selectedSlot?.specialty"></span></p>
+
+          <p><strong>Fecha y hora:</strong> 
+            <span x-text="new Date(selectedSlot?.date).toLocaleString()"></span>
+          </p>
+
+          <p><strong>Nombre del paciente:</strong> 
+            <span x-text="selectedSlot?.firstname + ' ' + selectedSlot?.lastname || 'Disponible'"></span>
+          </p>
+
+          <button>Ver paciente</button>
           <button @click="handleEditAppointment(selectedSlot)">Editar</button>
           <button @click="handleDeleteAppointment(selectedSlot.id)">Eliminar</button>
           <button @click="showModal = false">Cerrar</button>
@@ -99,8 +108,38 @@
         <button @click="handleCreateSlotsInBulk()">Guardar</button>
       </div>
 
-    </div>
-  </div>
+      
+      <!-- VISTA DE TABLA AL CLICKEAR UN DIA -->
+      <div x-show="view === 'dayView'" class="card">
+        <h1 x-text="'Turnos del día: ' + selectedDate"></h1>
+
+        <div class="schedule-table"> 
+          <template x-for="hour in hours" :key="hour">
+            <div class="row">
+              <!-- Columna hora -->
+              <div class="hour" x-text="hour"></div>
+              <!-- Columna turnos -->
+              <div class="slots">
+
+                <template x-if="daySlotsByHour[hour]">
+                  <template x-for="slot in daySlotsByHour[hour]" :key="slot.id">
+                    
+                    <div 
+                      class="calendar-box"
+                      :class="slot.is_booked ? 'occupied' : 'available'"
+                      @click="handleSlotClick(slot)"
+                    >
+                      <div x-text="'Médico: ' + slot.doctor"></div>
+                      <div x-text="'Área: ' + slot.specialty"></div>
+                      <div x-text="slot.is_booked ? 'Paciente: ' + slot.firstname + ' ' + slot.lastname : 'Disponible'"></div>
+                    </div>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
 
 <script type="module">
   import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
@@ -112,6 +151,10 @@
     view: 'calendar',
     appointments: [],
     editingId: null,
+    selectedDate: null,
+    daySlots: [], //turnos que hay en cada dia
+    daySlotsByHour: {}, //turnos que hay en un dia, agrupados por hora
+    hours: [],  //Las horas que vamos a tener, por ahora 00, 01, 02...24
 
     form: {
       firstname: '',
@@ -134,7 +177,7 @@
     async init() {
       this.generateWeek();
       await this.initCalendar();
-      //await this.loadAppointments();
+      this.showModal = false;
     },
 
     generateWeek() {
@@ -160,6 +203,40 @@
 //      this.appointments = await res.json();
 //    }, la de abajo seria su reemplazo usando FullCalendar
 
+    async loadDaySlots() {
+      const res = await fetch("http://localhost:3000/slots");
+      const slots = await res.json();
+
+      this.daySlots = slots.filter(s =>
+        s.date.startsWith(this.selectedDate)
+      );
+    },
+    formatTime(date) {
+      return new Date(date).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    generateHours() {
+      this.hours = [];
+      for (let h = 6; h <= 22; h++) {
+        this.hours.push(`${h.toString().padStart(2, '0')}:00`);
+      }
+    },
+    groupSlotsByHour() {
+      this.daySlotsByHour = {};
+
+      for (const slot of this.daySlots) {
+        const hour = this.formatTime(slot.date);
+
+        if (!this.daySlotsByHour[hour]) {
+          this.daySlotsByHour[hour] = [];
+        }
+
+        this.daySlotsByHour[hour].push(slot);
+      }
+    },
+
     async refreshCalendar() {
       const res = await fetch("http://localhost:3000/slots");
       const slots = await res.json();
@@ -169,12 +246,14 @@
       this.calendar.addEventSource(
         slots.map(s => ({
           id: s.id,
-          title: s.is_booked ? (s.firstname + ' ' + s.lastname) : "Disponible",
+          title: s.is_booked && s.firstname ? (s.firstname + ' ' + s.lastname): "Disponible",
           start: s.date,
           color: s.is_booked ? "red" : "green",
           extendedProps: {
             is_booked: s.is_booked,
             appointment_id: s.appointment_id,
+            doctor: s.doctor,
+            specialty: s.specialty,
             firstname: s.firstname,
             lastname: s.lastname,
             dni: s.dni
@@ -196,17 +275,28 @@
 
           events: slots.map(s => ({
             id: s.id,
-            title: s.is_booked ? (s.firstname + ' ' + s.lastname) : "Disponible",
+            title: s.is_booked && s.firstname ? (s.firstname + ' ' + s.lastname): "Disponible",
             start: s.date,
             color: s.is_booked ? "red" : "green",
             extendedProps: {
               is_booked: s.is_booked,
               appointment_id: s.appointment_id,
+              doctor: s.doctor,
+              specialty: s.specialty,
               firstname: s.firstname,
               lastname: s.lastname,
               dni: s.dni
             }
           })),
+
+          //Lo que ocurre al clickear la casilla de un día
+          dateClick: async (info) => {
+            this.selectedDate = info.dateStr;
+            await this.loadDaySlots();
+            this.generateHours();
+            this.groupSlotsByHour();
+            this.view = 'dayView';
+          },
 
           //La lógica de clickear en un turno (disponible o agendado)
           eventClick: async (info) => {
@@ -227,10 +317,12 @@
               this.selectedSlot = {
                 id: info.event.id,
                 appointment_id: props.appointment_id,
+                doctor: props.doctor,
+                specialty: props.specialty,
                 firstname: props.firstname,
                 lastname: props.lastname,
                 dni: props.dni,
-                //date: info.event.start.toISOString()
+                date: info.event.start,
               };
               this.showModal = true
             }
@@ -314,7 +406,34 @@
         console.error(error);
         alert("The appointment slots couldn't be bulk-created.");
       }
+    },
+
+//////Aca esta el slotClick//////
+    async handleSlotClick(slot) {
+      if (!slot.is_booked) {
+        this.form = {
+          slot_id: slot.id,
+          firstname: "",
+          lastname: "",
+          dni: ""
+        };
+        this.view = 'create';
+      } else {
+        this.editingId = slot.appointment_id;
+        this.selectedSlot = {
+          id: slot.id,
+          appointment_id: slot.appointment_id,
+          doctor: slot.doctor,
+          specialty: slot.specialty,
+          firstname: slot.firstname,
+          lastname: slot.lastname,
+          dni: slot.dni,
+          date: slot.date
+        }
+        this.showModal = true;
+      }
     }
+
   }))
   Alpine.start()
 </script>

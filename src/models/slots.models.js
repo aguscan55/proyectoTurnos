@@ -25,7 +25,7 @@ export const createSlotsInBulk = async (client, doctor, specialty, days, start_t
     const daysNum = days.map(Number);
     if (!daysNum.includes(d.getDay())) continue; //Reminder: Dom=0, Lun=1...
 
-    const baseDate = d.toISOString().split("T")[0];
+    const baseDate = d.toLocaleDateString('en-CA');
     const startDateTime = new Date(`${baseDate}T${start_time}:00`);
     const endDateTime = new Date(`${baseDate}T${end_time}:00`);
     //Creo los turnos cada 4 horas
