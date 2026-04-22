@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+body {
+    margin: 0;
+    font-family: 'Nunito', sans-serif;
+    background: #f4f7fb;
+}
+
+/* LAYOUT */
+.container {
+    display: flex;
+}
+
+/* TOPBAR */
+.topbar {
+    height: 60px;
+    background: #77AEBA;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 40px;
+    padding: 0 20px;
+    color: white;
+    font-size: 20px;
+}
+.topbar .menu {
+    display: flex;
+    gap: 25px;
+}
+.topbar .menu a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 220px;
+    background: #1e1e2f;
+    color: white;
+    height: calc(100vh - 60px);
+    padding: 20px;
+}
+
+.sidebar button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 10px;
+    background: #618d96;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 8px;
+}
+.sidebar button:hover {
+    background: #313b54;
+}
+
+.main {
+    flex: 1;
+    padding: 20px;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.08);
+    font-size: 20px;
+}
+.card button {
+    display: inline-block;
+    width: auto;
+
+    padding: 10px 18px;
+    margin: 10px 8px 0 0;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+.card button:hover {
+    background: #bbdfe7;
+}
+
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+#modalStyle {
+    width: 45%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: right;
+    background-color: #313b54;
+    color: white;
+    font-size: 25px;
+}
+
+#formStyle {
+    width: 65%;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#formStyle input {
+    width: 100%;
+    max-width: 400px;
+}
+
+/* FORMS */
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+}
+.card input {
+    margin-bottom: 30px;
+}
+
+button.primary {
+    margin-top: 15px;
+    background: #77AEBA;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+/* CALENDAR */
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.day {
+    border: 1px solid #ccc;
+    min-height: 120px;
+    padding: 5px;
+}
+
+.appointment {
+    background: #4caf50;
+    color: white;
+    margin-top: 5px;
+    padding: 4px;
+    font-size: 12px;
+}

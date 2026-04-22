@@ -3,138 +3,109 @@
 <head>
   <meta charset="UTF-8" />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.20/index.global.min.js'></script>
+  <link rel="stylesheet" href="./css/styles.css">
   <title>Turnos App</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial;
-      display: flex;
-    }
-
-    .sidebar {
-      width: 220px;
-      background: #1e1e2f;
-      color: white;
-      height: 100vh;
-      padding: 20px;
-    }
-
-    .sidebar button {
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px;
-      background: #333;
-      border: none;
-      color: white;
-      cursor: pointer;
-    }
-
-    .main {
-      flex: 1;
-      padding: 20px;
-    }
-
-    .calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 10px;
-    }
-
-    .day {
-      border: 1px solid #ccc;
-      min-height: 120px;
-      padding: 5px;
-    }
-
-    .appointment {
-      background: #4caf50;
-      color: white;
-      margin-top: 5px;
-      padding: 4px;
-      font-size: 12px;
-    }
-
-    input, button {
-      padding: 8px;
-      margin: 5px 0;
-    }
-  </style>
 </head>
 
 <body x-data="app" x-init="init()">
 
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <h2>Turnos</h2>
-    <button @click="view='calendar'">Calendario</button>
-    <button @click="view='create'">Nuevo turno</button>
-    <button @click="view='createSlot'">Crear Slot</button>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="logo"><h2>Medical Appointment Scheduler</h2></div>
+    <div class="menu">
+      <a href="#">Inicio</a>
+      <a href="#">Médicos</a>
+      <a href="#">Pacientes</a>
+      <a href="#">Login</a>
+    </div>
   </div>
 
-  <!-- MAIN -->
-  <div class="main">
-
-    <!-- CALENDAR -->
-    <div x-show="view === 'calendar'">
-      <h1>Calendario</h1>
-      <div id="calendar"></div>    
+  <div class="container">
+    
+    <!-- SIDEBAR -->
+  <div class="sidebar">
+      <h2>Panel</h2>
+      <button @click="view='calendar'">Calendario</button>
+      <button @click="view='create'">Asignar Turno</button>
+      <button @click="view='createSlot'">Crear Slot</button>
+      <button @click="view='createSlotsInBulk'">Crear Slots en masa</button>
+      <button>Configuración</button>
     </div>
-    <!-- La ventanita que aparece al clickear sobre un turno ya existente: -->
-    <div x-show="showModal" style="
-      position: fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background: rgba(0,0,0,0.5);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    ">
-      <div style="background:rgb(223, 251, 255); padding:20px; border-radius:10px;">
 
-        <h2>Turno</h2>
+    <!-- MAIN -->
+    <div class="main">
 
-        <p><strong>Nombre:</strong> <span x-text="selectedSlot?.firstname + ' ' + selectedSlot?.lastname"></span></p>
-        <p><strong>Fecha:</strong> <span x-text="selectedSlot?.date"></span></p>
-        <p><strong>Estado:</strong> Ocupado</p>
-        <p><strong>Horario:</strong> ...</p>
-
-        <button @click="handleEditAppointment(selectedSlot)">Editar</button>
-        <button @click="handleDeleteAppointment(selectedSlot.id)">Eliminar</button>
-        <button @click="showModal = false">Cerrar</button>
-
+      <!-- CALENDAR -->
+      <div x-show="view === 'calendar'" class="card">
+        <h1>Calendario</h1>
+        <div id="calendar"></div>    
       </div>
+      <!-- MODAL -->
+      <div x-show="showModal" class="modal-overlay">        
+        <div class="card" id="modalStyle">
+          <h2>Turno</h2>
+          <p><strong>Nombre:</strong> <span x-text="selectedSlot?.firstname + ' ' + selectedSlot?.lastname"></span></p>
+          <p><strong>Fecha:</strong> <span x-text="selectedSlot?.date"></span></p>
+          <p><strong>Estado:</strong> Ocupado</p>
+
+          <button @click="handleEditAppointment(selectedSlot)">Editar</button>
+          <button @click="handleDeleteAppointment(selectedSlot.id)">Eliminar</button>
+          <button @click="showModal = false">Cerrar</button>
+        </div>
+      </div>
+
+      <!-- FORM PARA TOMAR UN TURNO -->
+      <div x-show="view === 'create'" class="card" id="formStyle">
+        <h1 x-text="editingId ? 'Editar Turno' : 'Nuevo Turno'"></h1>
+
+        <p><strong>Completa con tus datos:</strong> <span x-text="form.date"></span></p>
+        <input type="text" placeholder="Nombre" x-model="form.firstname">
+        <input type="text" placeholder="Apellido" x-model="form.lastname">
+        <input type="text" placeholder="DNI" x-model="form.dni">
+
+        <button @click="handleScheduleAppointment()">Guardar</button>
+      </div>
+
+      <!-- FORM PARA CREAR UN TURNO -->
+      <div x-show="view === 'createSlot'" class="card" id="formStyle">
+        <h1>Crear Slot</h1>
+        <p><strong>Completa los siguientes datos:</strong></p>
+        <input type="text" placeholder="Médico" x-model="slotForm.doctor">
+        <input type="text" placeholder="Especialidad" x-model="slotForm.specialty">
+        <input type="datetime-local" x-model="slotForm.date">
+
+        <button @click="handleCreateSlot()">Guardar</button>
+      </div>
+
+      <!-- FORM PARA CREAR TURNOS EN MASA AUTOMATICAMENTE -->
+      <div x-show="view === 'createSlotsInBulk'" class="card" id="formStyle">
+        <h1>Asignar jornada laboral</h1>
+        <p><strong>Completa los siguientes datos:</strong></p>
+        <input type="text" placeholder="Médico" x-model="slotForm.doctor">
+        <input type="text" placeholder="Especialidad" x-model="slotForm.specialty">
+        <div>
+          <label><input type="checkbox" value="0" x-model="slotForm.days"> Domingo</label>
+          <label><input type="checkbox" value="1" x-model="slotForm.days"> Lunes</label>
+          <label><input type="checkbox" value="2" x-model="slotForm.days"> Martes</label>
+          <label><input type="checkbox" value="3" x-model="slotForm.days"> Miércoles</label>
+          <label><input type="checkbox" value="4" x-model="slotForm.days"> Jueves</label>
+          <label><input type="checkbox" value="5" x-model="slotForm.days"> Viernes</label>
+          <label><input type="checkbox" value="6" x-model="slotForm.days"> Sábado</label>
+        </div>
+        <input type="time" placeholder="Inicio de jornada" x-model="slotForm.start_time">
+        <input type="time" placeholder="Fin de jornada" x-model="slotForm.end_time">
+
+        <button @click="handleCreateSlotsInBulk()">Guardar</button>
+      </div>
+
     </div>
-
-    <!-- FORM PARA TOMAR UN TURNO -->
-    <div x-show="view === 'create'">
-      <h1 x-text="editingId ? 'Editar Turno' : 'Nuevo Turno'"></h1>
-
-      <p><strong>Fecha:</strong> <span x-text="form.date"></span></p>
-      <input type="text" placeholder="Nombre" x-model="form.firstname">
-      <input type="text" placeholder="Apellido" x-model="form.lastname">
-      <input type="text" placeholder="DNI" x-model="form.dni">
-
-      <button @click="handleScheduleAppointment()">Guardar</button>
-    </div>
-
-    <!-- FORM PARA CREAR UN TURNO -->
-    <div x-show="view === 'createSlot'">
-      <h1>Crear Slot</h1>
-
-      <input type="text" placeholder="Médico" x-model="slotForm.doctor">
-      <input type="text" placeholder="Especialidad" x-model="slotForm.specialty">
-      <input type="datetime-local" x-model="slotForm.date">
-
-      <button @click="handleCreateSlot()">Guardar</button>
-    </div>
-
   </div>
 
 <script type="module">
   import Alpine from 'https://unpkg.com/alpinejs@3.x.x/dist/module.esm.js'
   import { scheduleAppointment, editAppointment, deleteAppointment } from './js/appointments.js'
-  import { createAppointmentSlot } from './js/slots.js'
+  import { createAppointmentSlot, createSlotsInBulk } from './js/slots.js'
 
   window.Alpine = Alpine
   Alpine.data('app', () => ({
@@ -146,13 +117,14 @@
       firstname: '',
       lastname: '',
       dni: '',
-      date: ''
     },
 
     slotForm: {
       doctor: '',
       specialty: '',
-      date: ''
+      start_time: '',
+      end_time: '',
+      days: [] 
     },
 
     days: [],
@@ -219,6 +191,8 @@
         document.getElementById('calendar'),
         {
           initialView: 'dayGridMonth',
+          height: "auto",
+          contentHeight: 700,
 
           events: slots.map(s => ({
             id: s.id,
@@ -256,7 +230,7 @@
                 firstname: props.firstname,
                 lastname: props.lastname,
                 dni: props.dni,
-                date: info.event.start.toISOString()
+                //date: info.event.start.toISOString()
               };
               this.showModal = true
             }
@@ -318,13 +292,27 @@
     async handleCreateSlot() {
       try {
         await createAppointmentSlot(this.slotForm);
-        this.slotForm = { doctor: '', specialty: '', date: '' };
+        this.slotForm = { doctor: '', specialty: '',  days: this.slotForm.days.map(Number), start_time: '', end_time: ''};
         this.view = 'calendar';
         await this.refreshCalendar();
 
       } catch (error) {
         console.error(error);
         alert("The appointment slot couldn't be created.");
+      }
+    },
+
+//////Aca esta el createSlotsInBulk//////
+    async handleCreateSlotsInBulk() {
+      try {
+        await createSlotsInBulk(this.slotForm);
+        this.slotForm = { doctor: '', specialty: '', days: this.slotForm.days.map(Number), start_time: '', end_time: '' };
+        this.view = 'calendar';
+        await this.refreshCalendar();
+
+      } catch (error) {
+        console.error(error);
+        alert("The appointment slots couldn't be bulk-created.");
       }
     }
   }))

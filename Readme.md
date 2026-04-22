@@ -15,6 +15,7 @@ Clinic's patients can:
 * Node.js >=22
 * npm >= 10	
 * PostgreSQL (Supabase)
+* Tailwind CSS IntelliSense extension (if you're using VS Code)
 * Git Bash
 
 ## Tech Stack

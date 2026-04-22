@@ -1,5 +1,5 @@
 import { scheduleAppointment, editAppointment, deleteAppointment } from "./models/appointments.models.js";
-import { createAppointmentSlot } from "./models/slots.models.js";
+import { createAppointmentSlot, createSlotsInBulk } from "./models/slots.models.js";
 import express from "express";
 import cors from "cors";
 import pkg from "pg";
@@ -106,5 +106,25 @@ app.post("/slots", async (req, res) => {
   } catch (err) {
       console.error(err);
       res.status(500).send("Error creating the appointment slot");
+  }
+});
+
+////// Agrega slots de turnos en bulk //////
+app.post("/slots/bulk", async (req, res) => {
+  const { doctor, specialty, days, start_time, end_time } = req.body;
+  try {
+    const appointment = await createSlotsInBulk(
+      client, doctor, specialty, days, start_time, end_time
+    );
+    res.json({
+      message: "Created", 
+      appointment
+    });
+  } catch (err) {
+      console.error(err);
+      if (err.message.includes("exists")) {
+        return res.status(400).json({ error: err.message });
+      }
+      res.status(500).send("Error bulk-creating the appointment slots");
   }
 });
