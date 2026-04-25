@@ -36,7 +36,7 @@ export const deleteAppointment = async (client, id) => {
 
     //Pone el slot en Disponible
     await client.query(
-      "UPDATE slots SET is_booked = false, firstname = null, lastname = null, dni = null, appointment_id = null WHERE id = $1",
+      "UPDATE slots SET is_booked = false WHERE id = $1", 
       [slot_id]
     );
     

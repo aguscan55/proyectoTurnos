@@ -59,7 +59,7 @@
 
           <button>Ver paciente</button>
           <button @click="handleEditAppointment(selectedSlot)">Editar</button>
-          <button @click="handleDeleteAppointment(selectedSlot.id)">Eliminar</button>
+          <button @click="handleDeleteAppointment(selectedSlot.appointment_id)">Eliminar</button>
           <button @click="showModal = false">Cerrar</button>
         </div>
       </div>
@@ -197,11 +197,6 @@
         minute: '2-digit'
       });
     },
-
-//    async loadAppointments() {
-//      const res = await fetch("http://localhost:3000/appointments");
-//      this.appointments = await res.json();
-//    }, la de abajo seria su reemplazo usando FullCalendar
 
     async loadDaySlots() {
       const res = await fetch("http://localhost:3000/slots");
@@ -365,6 +360,7 @@
 
 //////Aca esta el deleteAppointment//////
     async handleDeleteAppointment(id) {
+      console.log("ID a eliminar:", id);
       try {
         await deleteAppointment(Number(id));
 

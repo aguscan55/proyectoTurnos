@@ -130,7 +130,7 @@ app.post("/slots/bulk", async (req, res) => {
 });
 
 ////// Elimina un slot //////
-app.post("/slots/id", async (req, res) => {
+app.post("/slots/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const slot = await deleteSlot(client, id);
