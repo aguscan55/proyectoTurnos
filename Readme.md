@@ -1,10 +1,11 @@
 # Medical Appointment Scheduling System
-???
+Appointment scheduling system for medical clinics, where doctors, secretaries and patients of the clinic can log in with their data, assign available appointments for certain days and times.
 The Notion log file for documenting the process and decisions taken can be found on: [here](https://www.notion.so/341f91b18420809eb5e8e6152763360a?v=343f91b1842080768eb6000c1b461565&source=copy_link)
 
 
 Users can:
-* Upload working hours for each doctor employee from the clinic
+* Upload working hours for each clinic employee
+* Access the staff data and patients medical data
 * Schedule appointments for patients
 
 Clinic's patients can:
@@ -31,11 +32,7 @@ Clinic's patients can:
 
 ## Setup and Execution
 
-1. Setup your project:
-```
-chmod -x setup.sh
-./setup.sh
-```
+1. Setup your database: Create an .env file following the .env_example. You'll need to create a new Supabase project to get a new database, at https://supabase.com/dashboard/org; click Copy → Direct connection string to add the link needed for the .env.
 
 2. Run the application
 ```
@@ -44,7 +41,7 @@ chmod -x run.sh
 ```
 
 Ya a partir de aca es de otro proyecto, queda como plantilla nomas
-3. Create an .env file following the .env_example. You'll need to create your own Slack App at https://api.slack.com/apps/; in Features → OAuth & Permissions → Scope, add bot token scopes for your bot to be able to write and read from the channels you add it to. In OAuth Tokens, click Install to <your Slack Project> to get the Authentication and Verification Tokens needed for the .env.
+3. 
 
 4. Log in to ngrok and create a domain to start a tunnel (you can reuse an existing ngrok domain if you already have one)
 

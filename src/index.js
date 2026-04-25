@@ -128,3 +128,21 @@ app.post("/slots/bulk", async (req, res) => {
       res.status(500).send("Error bulk-creating the appointment slots");
   }
 });
+
+////// Elimina un slot //////
+app.post("/slots/id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const slot = await deleteSlot(client, id);
+    if (!slot) {
+      return res.status(404).json({ error: "Slot not found" });
+    }
+    res.json({
+      message: "Deleted", 
+      slot
+    });
+  } catch (err) {
+      console.error(err);
+      res.status(500).send("Error: Couldn't delete the appointment slot");
+  }
+});

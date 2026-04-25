@@ -47,3 +47,19 @@ export const createSlotsInBulk = async (client, doctor, specialty, days, start_t
   console.log("slots generados:", slots.length);
   return { created: slots.length };
 };
+
+export const deleteSlot = async (client, id) => {
+  //Solo elimino si no hay ningún appointment asociado a este slot
+  const associatedAppt = await client.query(
+    "SELECT slot_id FROM appointments WHERE id = $1",
+    [id]
+  );
+  if (associatedAppt.rows.length === 0) {
+    const slot = await client.query("DELETE FROM slots WHERE id = $1 AND is_booked = false",
+      [id]
+    );
+  } else {
+    throw new Error("The appointment is taken!");
+  }
+  return results.rows[0];
+};
