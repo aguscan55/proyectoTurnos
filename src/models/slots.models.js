@@ -48,6 +48,15 @@ export const createSlotsInBulk = async (client, doctor, specialty, days, start_t
   return { created: slots.length };
 };
 
+export const editSlotsInBatch = async (client, doctor, startDate, endDate, specialty, startTime) => {
+    const result = await client.query(
+      "UPDATE slots SET specialty = $1, date = date_trunc('day', date) + 2$::time WHERE doctor = $3 AND date BETWEEN $4 AND $5 AND is_booked = false RETURNING *",
+      [specialty, startTime, doctor, startDate, endDate]
+    );
+
+    return result.rows;
+};
+
 export const deleteSlot = async (client, id) => {
   //Solo elimino si no hay ningún appointment asociado a este slot
   const associatedAppt = await client.query(

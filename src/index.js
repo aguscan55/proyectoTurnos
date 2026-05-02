@@ -36,11 +36,23 @@ app.get("/appointments", async (req, res) => {
   const result = await client.query("SELECT * FROM appointments");
   res.json(result.rows);
 });
-////// Hace un GET para ver todos los slots que existen y sus appointments asociados, si hay //////
+////// Hace un GET de todas las especialidades medicas //////
+app.get("/specialties", async (req, res) => {
+  const result = await client.query("SELECT DISTINCT specialty FROM slots");
+  res.json(result.rows);
+});
+////// Hace un GET para ver todos los slots que existen y sus appointments asociados, 
+// y si pasa el if los filtra según especialidad medica //////
 app.get("/slots", async (req, res) => {
-  const result = await client.query(
-    "SELECT slots.*, appointments.id AS appointment_id, appointments.firstname, appointments.lastname, appointments.dni FROM slots LEFT JOIN appointments ON slots.id = appointments.slot_id"
-  );
+  const { specialty } = req.query;
+  let query = "SELECT slots.*, appointments.id AS appointment_id, appointments.firstname, appointments.lastname, appointments.dni FROM slots LEFT JOIN appointments ON slots.id = appointments.slot_id";
+
+  const values = [];
+  if (specialty) {
+    query += " WHERE slots.specialty = $1";
+    values.push(specialty);
+  }
+  const result = await client.query(query, values);
   res.json(result.rows);
 });
 

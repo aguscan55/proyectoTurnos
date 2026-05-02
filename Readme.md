@@ -5,7 +5,7 @@ The Notion log file for documenting the process and decisions taken can be found
 
 Users can:
 * Upload working hours for each clinic employee
-* Access the staff data and patients medical data
+* Access the staff data and patients medical records
 * Schedule appointments for patients
 
 Clinic's patients can:
@@ -22,7 +22,7 @@ Clinic's patients can:
 ## Tech Stack
 ### Backend
 - Node.js
-- Express (que hace?)
+- Express
 
 ### Frontend
 - Alpine.js 
@@ -40,23 +40,4 @@ chmod -x run.sh
 ./run.sh
 ```
 
-Ya a partir de aca es de otro proyecto, queda como plantilla nomas
-3. 
-
-4. Log in to ngrok and create a domain to start a tunnel (you can reuse an existing ngrok domain if you already have one)
-
-5. Use ngrok in a new terminal to expose your local server. From slackbot/ngrok run:
-```
-./ngrok http 8000 --url=<YOUR_NGROK_URL>
-```
-
-6. Copy the generated public URL and configure it in your Slack App:
-
-Slack App → Event Subscriptions → Request URL → <YOUR_NGROK_URL>/events/
-
-Example:
-```
-https://xxxx.ngrok.io/slack/events/
-```
-
-Make sure ngrok is running so Slack can reach your local backend.
+3. Aca deberiamos agregar para correr algun archivo de fetch a la DB con datos de medicos y pacientes preexistentes para que sea mas creible la vista de los datos (ficha medica y ficha laboral).
